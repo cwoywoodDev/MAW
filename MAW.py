@@ -56,7 +56,6 @@ if "Sueño" in modo:
     pistas_ambiente_db = cursor.fetchall()
     conn.close()
 
-    # Normalizar rutas de la BD y usar respaldo real existente
     opciones_principales = {
         titulo: ruta.replace("\\", "/") for id_p, titulo, ruta in pistas_principales_db
     } if pistas_principales_db else {
@@ -80,11 +79,11 @@ if "Sueño" in modo:
                     es_loop = not modo_continuo
                     st.audio(ruta_audio_actual, format="audio/mp3", loop=es_loop)
                 else:
-                    st.warning(f"⚠️ El archivo no se encuentra en la ruta: '{ruta_audio_actual}'. Verifica que exista en GitHub.")
+                    st.warning(f"⚠️ El archivo no se encuentra en la ruta: '{ruta_audio_actual}'.")
             with col2:
                 vol_main = st.slider("Volumen Principal", 0, 100, 70, key="vol_main_sleep")
         else:
-            st.info("No hay pistas principales guardadas en la base de datos.")
+            st.info("No hay pistas principales guardadas.")
             vol_main = 70
 
     # CONTENEDOR MEZCLADOR AMBIENTAL MULTI-CAPA
@@ -108,7 +107,6 @@ if "Sueño" in modo:
                     volumenes_ambiente.append(v_amb_val / 100.0)
             st.markdown("---")
 
-        # Canales estáticos de respaldo
         c1, c2, c3 = st.columns(3)
         ruta_tormenta = "assets/ambient/tormenta1.mp3"
         ruta_marron = "assets/ambient/ruido_marron.mp3"
@@ -138,7 +136,6 @@ if "Sueño" in modo:
                 st.error("⚠️ Archivo no encontrado.")
             vol_viento = st.slider("Viento", 0, 100, 0, key="vol_viento_sleep")
 
-    # CONTROL JS DE VOLUMEN Y MEDIA SESSION API
     v_main_f = vol_main / 100.0
     v_tormenta_f = vol_tormenta / 100.0
     v_marron_f = vol_marron / 100.0
@@ -169,13 +166,6 @@ if "Sueño" in modo:
                 if (audioElements[idx]) {{ audioElements[idx].volume = {v_tormenta_f}; idx++; }}
                 if (audioElements[idx]) {{ audioElements[idx].volume = {v_marron_f}; idx++; }}
                 if (audioElements[idx]) {{ audioElements[idx].volume = {v_viento_f}; idx++; }}
-
-                if ('mediaSession' in window.parent.navigator) {{
-                    window.parent.navigator.mediaSession.metadata = new window.parent.MediaMetadata({{
-                        title: 'MAW Player - Sueño',
-                        artist: 'Mezclador Activo'
-                    }});
-                }}
             }}
         }}
         aplicarNivelVolumenes();
@@ -199,13 +189,6 @@ elif "Concentración" in modo:
         WHERE categoria_id = 'focus' AND tipo_pista = 'principal'
     """)
     pistas_focus_db = cursor.fetchall()
-
-    cursor.execute("""
-        SELECT id, titulo, ruta_archivo 
-        FROM pistas_audio 
-        WHERE categoria_id = 'focus' AND tipo_pista = 'ambiente'
-    """)
-    pistas_focus_amb_db = cursor.fetchall()
     conn.close()
 
     opciones_focus = {
@@ -214,6 +197,7 @@ elif "Concentración" in modo:
         "Lo-Fi Study Beats (Respaldo)": "assets/music/lofi01.mp3"
     }
 
+    # REPRODUCTOR FOCUS PRINCIPAL
     with st.container(border=True):
         st.subheader("🎧 Pistas de Enfoque Guardadas")
         if opciones_focus:
@@ -236,23 +220,69 @@ elif "Concentración" in modo:
             st.info("No hay pistas de focus guardadas.")
             vol_focus_main = 80
 
+    # MEZCLADOR DE CAPAS AMBIENTALES EN FOCUS (Con los archivos reales de tu carpeta ambient)
     volumenes_focus_amb = []
     with st.container(border=True):
         st.subheader("🎛️ Capas Ambientales de Fondo para Focus")
         
-        if pistas_focus_amb_db:
-            for idx_fa, (id_fa, tit_fa, rut_fa) in enumerate(pistas_focus_amb_db):
-                rut_fa_norm = rut_fa.replace("\\", "/")
-                fc_a1, fc_a2 = st.columns([2, 3])
-                with fc_a1:
-                    st.markdown(f"**🔊 {tit_fa}**")
-                    if os.path.exists(rut_fa_norm):
-                        st.audio(rut_fa_norm, format="audio/mp3", loop=True)
-                    else:
-                        st.error(f"⚠️ Archivo no encontrado.")
-                with fc_a2:
-                    v_famb_val = st.slider(f"Volumen: {tit_fa}", 0, 100, 35, key=f"vol_famb_db_{id_fa}_{idx_fa}")
-                    volumenes_focus_amb.append(v_famb_val / 100.0)
+        fc1, fc2, fc3 = st.columns(3)
+        ruta_lluvia_cafeteria = "assets/ambient/lluvia_cafeteria.mp3"
+        ruta_alfa = "assets/ambient/alfa_10hz.mp3"
+        ruta_lluvia01 = "assets/ambient/lluvia001.mp3"
+
+        with fc1:
+            st.markdown("**☕ Lluvia Cafetería**")
+            if os.path.exists(ruta_lluvia_cafeteria):
+                st.audio(ruta_lluvia_cafeteria, format="audio/mp3", loop=True)
+            else:
+                st.error("⚠️ Archivo no encontrado.")
+            vol_cafeteria = st.slider("Cafetería", 0, 100, 30, key="vol_cafeteria_focus")
+
+        with fc2:
+            st.markdown("**🧠 Ondas Alpha (10 Hz)**")
+            if os.path.exists(ruta_alfa):
+                st.audio(ruta_alfa, format="audio/mp3", loop=True)
+            else:
+                st.error("⚠️ Archivo no encontrado.")
+            vol_alfa = st.slider("Ondas Alpha", 0, 100, 25, key="vol_alfa_focus")
+
+        with fc3:
+            st.markdown("**🌧️ Lluvia Suave**")
+            if os.path.exists(ruta_lluvia01):
+                st.audio(ruta_lluvia01, format="audio/mp3", loop=True)
+            else:
+                st.error("⚠️ Archivo no encontrado.")
+            vol_lluvia01 = st.slider("Lluvia Suave", 0, 100, 20, key="vol_lluvia01_focus")
+
+    vf_main = vol_focus_main / 100.0
+    vf_cafeteria = vol_cafeteria / 100.0
+    vf_alfa = vol_alfa / 100.0
+    vf_lluvia01 = vol_lluvia01 / 100.0
+
+    js_code_focus = f"""
+    <script>
+        function aplicarAjustesFocus() {{
+            const doc = window.parent.document;
+            const audioElements = doc.querySelectorAll('audio');
+            
+            audioElements.forEach(aud => {{
+                aud.setAttribute('controlsList', 'nodownload noplaybackrate nooverflow');
+                aud.disableRemotePlayback = true;
+            }});
+
+            if (audioElements.length > 0) {{
+                let idx = 0;
+                if (audioElements[idx]) {{ audioElements[idx].volume = {vf_main}; idx++; }}
+                if (audioElements[idx]) {{ audioElements[idx].volume = {vf_cafeteria}; idx++; }}
+                if (audioElements[idx]) {{ audioElements[idx].volume = {vf_alfa}; idx++; }}
+                if (audioElements[idx]) {{ audioElements[idx].volume = {vf_lluvia01}; idx++; }}
+            }}
+        }}
+        aplicarAjustesFocus();
+        setTimeout(aplicarAjustesFocus, 500);
+    </script>
+    """
+    components.html(js_code_focus, height=0, width=0)
 
 elif "Administración" in modo:
     aplicar_tema_sueno()
