@@ -17,12 +17,20 @@ st.set_page_config(
 # Inicializar Base de Datos
 init_db()
 
-# Navegación lateral
-st.sidebar.title("🎵 Categorías")
-modo = st.sidebar.radio("Seleccionar:", ["🌙 Sueño", "🎯 Concentración Focus", "⚙️ Administración"])
+# Navegación superior horizontal
+st.markdown("### 🎵 Selector de Categorías")
+col_nav1, col_nav2 = st.columns([3, 1])
+with col_nav1:
+    modo = st.radio(
+        "Seleccionar:", 
+        ["🌙 Sueño", "🎯 Concentración Focus", "⚙️ Administración"], 
+        horizontal=True,
+        label_visibility="collapsed"
+    )
+with col_nav2:
+    modo_continuo = st.toggle("🔁 Reproducción Continua", value=False)
 
-st.sidebar.markdown("---")
-modo_continuo = st.sidebar.toggle("🔁 Reproducción Continua (Playlist)", value=False)
+st.markdown("---")
 
 if "Sueño" in modo:
     aplicar_tema_sueno()
@@ -154,7 +162,6 @@ if "Sueño" in modo:
                 if (audioElements[idx]) {{ audioElements[idx].volume = {v_marron_f}; idx++; }}
                 if (audioElements[idx]) {{ audioElements[idx].volume = {v_viento_f}; idx++; }}
 
-                // MEDIA SESSION API: Evita el corte de audio en celulares
                 if ('mediaSession' in window.parent.navigator) {{
                     window.parent.navigator.mediaSession.metadata = new window.parent.MediaMetadata({{
                         title: 'MAW Player - Sueño',
@@ -297,7 +304,6 @@ elif "Concentración" in modo:
                 if (audioElements[idx]) {{ audioElements[idx].volume = {vf_lluvia}; idx++; }}
                 if (audioElements[idx]) {{ audioElements[idx].volume = {vf_binaural}; idx++; }}
 
-                // MEDIA SESSION API: Evita el corte de audio en celulares
                 if ('mediaSession' in window.parent.navigator) {{
                     window.parent.navigator.mediaSession.metadata = new window.parent.MediaMetadata({{
                         title: 'MAW Player - Focus',
