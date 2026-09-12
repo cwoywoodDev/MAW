@@ -56,11 +56,11 @@ if "Sueño" in modo:
     pistas_ambiente_db = cursor.fetchall()
     conn.close()
 
-    # Normalizar rutas de la BD para evitar problemas con barras invertidas (\ vs /)
+    # Normalizar rutas de la BD y usar un archivo real existente como respaldo ('Tranquility.mp3')
     opciones_principales = {
         titulo: ruta.replace("\\", "/") for id_p, titulo, ruta in pistas_principales_db
     } if pistas_principales_db else {
-        "Olas Nocturnas & Frecuencia Delta": "assets/music/olas_delta.mp3"
+        "Tranquility Base (Respaldo)": "assets/music/Tranquility.mp3"
     }
 
     # CONTENEDOR REPRODUCTOR PRINCIPAL
@@ -211,7 +211,7 @@ elif "Concentración" in modo:
     opciones_focus = {
         titulo: ruta.replace("\\", "/") for id_p, titulo, ruta in pistas_focus_db
     } if pistas_focus_db else {
-        "Lo-Fi Study Beats": "assets/music/focus_lofi.mp3"
+        "Lo-Fi Study Beats (Respaldo)": "assets/music/lofi01.mp3"
     }
 
     with st.container(border=True):
@@ -294,7 +294,6 @@ elif "Administración" in modo:
                     directorio_destino = os.path.join("assets", subcarpeta)
                     os.makedirs(directorio_destino, exist_ok=True)
                     
-                    # Forzar barras diagonales para compatibilidad total con Streamlit Cloud (Linux)
                     nombre_archivo_seguro = archivo_audio.name
                     ruta_guardado = f"assets/{subcarpeta}/{nombre_archivo_seguro}"
                     
