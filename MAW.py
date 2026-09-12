@@ -56,7 +56,7 @@ if "Sueño" in modo:
     pistas_ambiente_db = cursor.fetchall()
     conn.close()
 
-    # Normalizar rutas de la BD y usar un archivo real existente como respaldo ('Tranquility.mp3')
+    # Normalizar rutas de la BD y usar respaldo real existente
     opciones_principales = {
         titulo: ruta.replace("\\", "/") for id_p, titulo, ruta in pistas_principales_db
     } if pistas_principales_db else {
